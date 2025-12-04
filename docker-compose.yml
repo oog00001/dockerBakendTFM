@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: mi_servicio_python_pe
+    
+    # --- CAMBIO CLAVE 1: El 'Contexto' de construcción ---
+    # Le dice a Docker que busque el Dockerfile DENTRO de la carpeta 
+    # 'codigoPythonPE-main' y la use como base.
+    build:
+      context: ./codigoPythonPE-main
+      
+    ports:
+      # Puerto Host : Puerto Contenedor
+      - "8020:5000"
+      
+    command: python main.py
+    
+    # --- CAMBIO CLAVE 2: El 'Volumen' de código ---
+    # Monta la carpeta del host 'codigoPythonPE-main'
+    # en el directorio '/app' dentro del contenedor.
+    volumes:
+      # Volumen para el código (desarrollo)
+      - ./codigoPythonPE-main:/app
+      # Volumen para datos persistentes
+      - datos_app:/data
+      
+    # Asumimos que el Dockerfile (ver abajo) define el WORKDIR
+    # Si no, puedes añadirlo aquí para asegurar:
+    # working_dir: /app
+
+  actualizador:
+    container_name: actualizador_bd
+    build:
+      context: ./codigoPythonPE-main
+    ports:
+      - "8020:5000"
+    command: python obtenerCarteleraOrigen.py
+    volumes:
+      - ./codigoPythonPE-main:/app
+      - datos_app:/data
+
+
+# Definición del volumen nombrado para datos
+volumes:
+  datos_app:
